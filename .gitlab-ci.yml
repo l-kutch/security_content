@@ -4,9 +4,9 @@ variables:
   DOCKER_ROLE: docker:v1/registry-test/prefix/threat-research
 
 stages:
-  - debug-credentials
+#  - debug-credentials
 #  - ssa-validate
-#  - smoketest_play
+  - smoketest_play
 
 
 debug-credentials:
@@ -27,13 +27,13 @@ debug-credentials:
 #    - python3 bin/ssa_validate.py --skip-error detections/*/*
 #    - python3 bin/ssa_test.py --skip-error tests/*/*
 #    - python3 bin/testing_coverage.py --type streaming --min-coverage 1.0
-#
-#smoketest_play:
-#  stage: smoketest_play
-#  image: docker-test.repo.splunkdev.net/threat-research/deployer-test:latest
-#  script:
-#    - eval $(go-go vault -a ${K8S_PLAYGROUND_ROLE})
-#    - eval $(go-go vault -a ${DOCKER_ROLE})
-#  variables:
-#    SCSENV: app_play1
-#    SRCBRANCH: $CI_COMMIT_REF_NAME
+
+smoketest_play:
+  stage: smoketest_play
+  image: docker-test.repo.splunkdev.net/threat-research/deployer-test:latest
+  script:
+    - eval $(go-go vault -a ${K8S_PLAYGROUND_ROLE})
+    - eval $(go-go vault -a ${DOCKER_ROLE})
+  variables:
+    SCSENV: app_play1
+    SRCBRANCH: $CI_COMMIT_REF_NAME
