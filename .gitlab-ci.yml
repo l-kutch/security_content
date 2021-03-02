@@ -1,6 +1,6 @@
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  K8S_PLAYGROUND_ROLE: k8s:v1/app-play1/namespace/threat-research/role/deploy
+  K8S_PLAYGROUND_ROLE: k8s:v1/app-play1/namespace/threat-research/role/deployer
   DOCKER_ROLE: docker:v1/registry-test/prefix/threat-research
 
 stages:
