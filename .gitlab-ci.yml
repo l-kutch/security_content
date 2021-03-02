@@ -4,11 +4,10 @@ variables:
   DOCKER_ROLE: docker:v1/registry-test/prefix/threat-research
 
 stages:
+  - publish_deployer
   - smoketest_play
   - debug-credentials
-  - ssa-validate
-
-
+#  - ssa-validate
 
 debug-credentials:
   stage: debug-credentials
@@ -29,8 +28,22 @@ debug-credentials:
 #    - python3 bin/ssa_test.py --skip-error tests/*/*
 #    - python3 bin/testing_coverage.py --type streaming --min-coverage 1.0
 
+publish_deployer:
+  stage: publish_deployer
+  image: docker.repo.splunkdev.net/ci-cd/ci-container:alpine-3.11
+  before_script:
+    - apk add --update docker
+  script:
+    - eval $(go-go vault -a ${DOCKER_ROLE})
+    - cd bin/ssa-end-to-end-testing/k8s-deployer
+    - ./publish.sh
+
+
 smoketest_play:
   stage: smoketest_play
+  dependencies:
+    - debug-credentials
+    - publish_deployer
   image: docker-test.repo.splunkdev.net/threat-research/deployer-test:latest
   script:
     - eval $(go-go vault -a ${K8S_PLAYGROUND_ROLE})
