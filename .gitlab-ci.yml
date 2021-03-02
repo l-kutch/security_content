@@ -4,9 +4,10 @@ variables:
   DOCKER_ROLE: docker:v1/registry-test/prefix/threat-research
 
 stages:
-#  - debug-credentials
-#  - ssa-validate
   - smoketest_play
+  - debug-credentials
+  - ssa-validate
+
 
 
 debug-credentials:
