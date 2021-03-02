@@ -13,6 +13,7 @@ debug-credentials:
   stage: debug-credentials
   image: docker.repo.splunkdev.net/ci-cd/ci-container:alpine-3.11
   script:
+    - creds-helper init
     - echo $(go-go vault -a ${K8S_PLAYGROUND_ROLE})
     - echo $(go-go vault -a ${DOCKER_ROLE})
 
