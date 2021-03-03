@@ -2,6 +2,7 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   K8S_PLAYGROUND_ROLE: k8s:v1/app-play1/namespace/threat-research/role/deployer
   DOCKER_ROLE: docker:v1/registry-test/prefix/threat-research
+  DOCKER_DEPLOYER_CONTAINER: docker-test.repo.splunkdev.net/threat-research/deployer-test
 
 stages:
   - publish_deployer
@@ -27,17 +28,19 @@ publish_deployer:
   script:
     - eval $(go-go vault -a ${DOCKER_ROLE})
     - cd bin/ssa-end-to-end-testing/k8s-deployer
-    - ./publish.sh
+    - docker build . -t ${DOCKER_DEPLOYER_CONTAINER}:${CI_COMMIT_SHORT_SHA}
+    - docker push ${DOCKER_DEPLOYER_CONTAINER}:${CI_COMMIT_SHORT_SHA}
 
 
 smoketest_play:
   stage: smoketest_play
   dependencies:
     - publish_deployer
-  image: docker-test.repo.splunkdev.net/threat-research/deployer-test:latest
+  image: ${DOCKER_DEPLOYER_CONTAINER}:${CI_COMMIT_SHORT_SHA}
   script:
     - eval $(go-go vault -a ${K8S_PLAYGROUND_ROLE})
     - eval $(go-go vault -a ${DOCKER_ROLE})
+    - ./deployer.sh
   variables:
     SCSENV: app_play1
     SRCBRANCH: $CI_COMMIT_REF_NAME
