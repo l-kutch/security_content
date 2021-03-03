@@ -2,31 +2,23 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   K8S_PLAYGROUND_ROLE: k8s:v1/app-play1/namespace/threat-research/role/deployer
   DOCKER_ROLE: docker:v1/registry-test/prefix/threat-research
-  DOCKER_DEPLOYER_CONTAINER: docker-test.repo.splunkdev.net/threat-research/deployer-test
+  DOCKER_DEPLOYER_CONTAINER: docker.repo.splunkdev.net/threat-research/k8-deployer
 
 stages:
-  - test_job
   - publish_deployer
   - smoketest_play
-#  - ssa-validate
+  - ssa-validate
 
-#validate:
-#  stage: ssa-validate
-#  image: docker.repo.splunkdev.net/ci-cd/ci-container:alpine-3.11
-#  before_script:
-#    - apk add --update python3 python3-dev py-pip build-base openjdk8-jre && pip install virtualenv && rm -rf /var/cache/apk/*
-#    - pip3 install -r requirements.txt
-#  script:
-#    - python3 bin/ssa_validate.py --skip-error detections/*/*
-#    - python3 bin/ssa_test.py --skip-error tests/*/*
-#    - python3 bin/testing_coverage.py --type streaming --min-coverage 1.0
-
-test_job:
-  stage: test_job
-  image: docker-test.repo.splunkdev.net/ar-perf/ci:stable
+validate:
+  stage: ssa-validate
+  image: docker.repo.splunkdev.net/ci-cd/ci-container:alpine-3.11
+  before_script:
+    - apk add --update python3 python3-dev py-pip build-base openjdk8-jre && pip install virtualenv && rm -rf /var/cache/apk/*
+    - pip3 install -r requirements.txt
   script:
-    - eval $(go-go vault -a ${DOCKER_ROLE})
-    - echo "hello world"
+    - python3 bin/ssa_validate.py --skip-error detections/*/*
+    - python3 bin/ssa_test.py --skip-error tests/*/*
+    - python3 bin/testing_coverage.py --type streaming --min-coverage 1.0
 
 publish_deployer:
   stage: publish_deployer
@@ -36,14 +28,14 @@ publish_deployer:
   script:
     - eval $(go-go vault -a ${DOCKER_ROLE})
     - cd bin/ssa-end-to-end-testing/k8s-deployer
-    - docker build . -t ${DOCKER_DEPLOYER_CONTAINER}:${CI_COMMIT_SHORT_SHA}
-    - docker push ${DOCKER_DEPLOYER_CONTAINER}:${CI_COMMIT_SHORT_SHA}
+    - docker build . -t ${K8_DEPLOYER_CONTAINER}:${CI_COMMIT_SHORT_SHA}
+    - docker push ${K8_DEPLOYER_CONTAINER}:${CI_COMMIT_SHORT_SHA}
 
 smoketest_play:
   stage: smoketest_play
   dependencies:
     - publish_deployer
-  image: ${DOCKER_DEPLOYER_CONTAINER}:${CI_COMMIT_SHORT_SHA}
+  image: ${K8_DEPLOYER_CONTAINER}:${CI_COMMIT_SHORT_SHA}
   script:
     - eval $(go-go vault -a ${K8S_PLAYGROUND_ROLE})
     - eval $(go-go vault -a ${DOCKER_ROLE})
