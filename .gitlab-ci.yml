@@ -5,6 +5,7 @@ variables:
   DOCKER_DEPLOYER_CONTAINER: docker-test.repo.splunkdev.net/threat-research/deployer-test
 
 stages:
+  - test_job
   - publish_deployer
   - smoketest_play
 #  - ssa-validate
@@ -20,6 +21,13 @@ stages:
 #    - python3 bin/ssa_test.py --skip-error tests/*/*
 #    - python3 bin/testing_coverage.py --type streaming --min-coverage 1.0
 
+test_job:
+  stage: test_job
+  image: docker-test.repo.splunkdev.net/ar-perf/ci:stable
+  script:
+    - eval $(go-go vault -a ${DOCKER_ROLE})
+    - echo "hello world"
+
 publish_deployer:
   stage: publish_deployer
   image: docker.repo.splunkdev.net/ci-cd/ci-container:alpine-3.11
@@ -31,24 +39,15 @@ publish_deployer:
     - docker build . -t ${DOCKER_DEPLOYER_CONTAINER}:${CI_COMMIT_SHORT_SHA}
     - docker push ${DOCKER_DEPLOYER_CONTAINER}:${CI_COMMIT_SHORT_SHA}
 
-
 smoketest_play:
   stage: smoketest_play
   dependencies:
     - publish_deployer
   image: ${DOCKER_DEPLOYER_CONTAINER}:${CI_COMMIT_SHORT_SHA}
   script:
-    - echo "hello world"
-
-#smoketest_play:
-#  stage: smoketest_play
-#  dependencies:
-#    - publish_deployer
-#  image: ${DOCKER_DEPLOYER_CONTAINER}:${CI_COMMIT_SHORT_SHA}
-#  script:
-#    - eval $(go-go vault -a ${K8S_PLAYGROUND_ROLE})
-#    - eval $(go-go vault -a ${DOCKER_ROLE})
-#    - ./deployer.sh
-#  variables:
-#    SCSENV: app_play1
-#    SRCBRANCH: $CI_COMMIT_REF_NAME
+    - eval $(go-go vault -a ${K8S_PLAYGROUND_ROLE})
+    - eval $(go-go vault -a ${DOCKER_ROLE})
+    - ./deployer.sh
+  variables:
+    SCSENV: app_play1
+    SRCBRANCH: $CI_COMMIT_REF_NAME
