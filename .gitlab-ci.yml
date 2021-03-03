@@ -5,7 +5,6 @@ variables:
   K8_DEPLOYER_CONTAINER: docker.repo.splunkdev.net/threat-research/k8-deployer
 
 stages:
-  - publish_deployer
   - smoketest_play
   - ssa-validate
 
@@ -39,8 +38,7 @@ smoketest_play:
   script:
     - eval $(go-go vault -a ${K8S_PLAYGROUND_ROLE})
     - eval $(go-go vault -a ${DOCKER_ROLE})
-    - pwd
-    - ls
+    - cd ../deployer
     - ./deployer.sh
   variables:
     SCSENV: app_play1
