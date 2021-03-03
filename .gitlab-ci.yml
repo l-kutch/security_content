@@ -5,6 +5,7 @@ variables:
   K8_DEPLOYER_CONTAINER: docker.repo.splunkdev.net/threat-research/k8-deployer
 
 stages:
+  - publish_deployer
   - smoketest_play
   - ssa-validate
 
