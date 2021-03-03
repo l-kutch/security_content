@@ -39,6 +39,8 @@ smoketest_play:
   script:
     - eval $(go-go vault -a ${K8S_PLAYGROUND_ROLE})
     - eval $(go-go vault -a ${DOCKER_ROLE})
+    - pwd
+    - ls
     - ./deployer.sh
   variables:
     SCSENV: app_play1
